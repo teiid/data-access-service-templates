@@ -1,0 +1,19 @@
+#############################################################################
+# Deprovision the service
+#############################################################################
+- k8s_v1_service:
+    name: postgres-db-svc
+    namespace: '{{ namespace }}'
+    state: absent
+
+
+#############################################################################
+# Deprovision the deployment config
+# When removing a Deployment Config, OpenShift will automatically clean up
+# its associated resources like replication controllers and pods
+#############################################################################
+- openshift_v1_deployment_config:
+    name: postgres-db-svc
+    namespace: '{{ namespace }}'
+    state: absent
+

@@ -1,0 +1,55 @@
+- name: create '{{ postgresql_database }}' database on PostgreSQL   
+  become_user: postgres
+  postgresql_db: name="{{ postgresql_database }}" encoding='UTF-8' lc_collate='en_US.UTF-8' lc_ctype='en_US.UTF-8' state=present
+
+- name: Create '{{ postgresql_database }}' role for database
+  become_user: postgres
+  postgresql_user: db="{{ postgresql_database }}" user="{{ postgresql_user }}" password="{{ postgresql_password }}" priv=ALL state=present
+
+- name: Clean old script files
+  file: state=absent path=/tmp/psql_script.zip
+    
+- name: Clean old script directory      
+  file: state=absent path=/tmp/psql_script
+      
+- name: Download create schema script from '{{ postgresql_create_script }}'
+  become_user: postgres
+  get_url: url="{{ postgresql_create_script }}" dest=/tmp/psql_dump.zip force=yes
+  when: postgresql_create_script is defined
+  register: psql_script
+
+- name: create directory
+  become_user: postgres
+  file: path=/tmp/psql_script state=directory mode=0777
+      
+- name: Unzip if '{{ postgresql_create_script }}' is a archive file
+  become_user: postgres
+  unarchive: src=/tmp/psql_dump.zip dest=/tmp/psql_script/ remote_src=true mode=0666
+  when: psql_script is defined
+        
+- name: Replacing $$PATH$$ to local directory
+  become_user: postgres
+  replace: path="{{ item }}" regexp='\\$\\$PATH\\$\\$' replace='/tmp/psql_script' mode=0644
+  with_fileglob:
+      - "/tmp/psql_script/*.ddl"
+      - "/tmp/psql_script/*.sql"  
+          
+- name: Importing '{{ postgresql_create_script }}' data
+  become_user: postgres
+  shell: "psql -U postgres -d {{ postgresql_database }} -a -f {{ item }} "
+  when: psql_script is defined
+  with_fileglob:
+      - "/tmp/psql_script/*.ddl"
+      - "/tmp/psql_script/*.sql"  
+      
+- name: Grant usage of schema to '{{ postgresql_user }}' role
+  become_user: postgres
+  postgresql_privs: database="{{ postgresql_database }}" state=present privs=USAGE type=schema roles="{{ postgresql_user }}" objs="{{ postgresql_schema }}"
+
+- name: Grant table permissions for '{{ postgresql_user }}' role
+  become_user: postgres
+  postgresql_privs: database="{{ postgresql_database }}" schema="{{ postgresql_schema }}" state=present privs=SELECT,INSERT,UPDATE type=table roles="{{ postgresql_user }}" grant_option=no objs=ALL_IN_SCHEMA
+    
+- name: Grant sequence permissions for '{{ postgresql_user }}' role
+  become_user: postgres
+  postgresql_privs: database="{{ postgresql_database }}" schema="{{ postgresql_schema }}" state=present privs=USAGE type=sequence roles="{{ postgresql_user }}" grant_option=no objs=ALL_IN_SCHEMA
