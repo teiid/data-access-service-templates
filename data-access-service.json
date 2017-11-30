@@ -1,0 +1,269 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+    	"name": "data-access-service",
+        "annotations": {
+            "iconClass": "icon-datavirt",            
+            "description": "Data Access Service, integrate data from multiple disparate data sources.",
+            "tags": "datavirt,jdv,data,virtualization,integration",
+            "version": "1.0.0",
+            "openshift.io/display-name": "Data Access Service",
+	        "template.openshift.io/documentation-url": "http://teiid.org/docs/",
+	        "template.openshift.io/long-description": "This template provides UI to create a data access services using Teiid Data Virtualization engine.",
+	        "template.openshift.io/provider-display-name": "Red Hat, Inc.",
+	        "template.openshift.io/support-url": "http://teiid.org/"            
+        }
+    },
+    "labels": {
+        "template": "data-access-service"
+    },
+    "message": "A new data access service has been created in your project",
+    "parameters": [
+	    {
+	      "description": "Namespace for the application. Note: The namespace is required for creating proper RoleBindings. Specifying wrong namespace will prevent cluster from forming.",
+	      "name": "NAMESPACE",
+	      "required": true,
+	      "value": "myproject"
+	    }
+    ],    
+    "objects": [
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "das-sa",
+        "annotations": {
+          "serviceaccounts.openshift.io/oauth-redirectreference.primary": "{\"kind\":\"OAuthRedirectReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"Route\",\"name\":\"das\"}}"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Route",
+      "metadata": {
+        "name": "das"
+      },
+      "spec": {
+        "to": {
+          "name": "proxy"
+        },
+        "tls": {
+          "termination": "Reencrypt"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "proxy",
+        "annotations": {
+          "service.alpha.openshift.io/serving-cert-secret-name": "proxy-tls"
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "proxy",
+            "port": 443,
+            "targetPort": 8443
+          }
+        ],
+        "selector": {
+          "app": "proxy"
+        }
+      }
+    },
+    {
+      "apiVersion": "extensions/v1beta1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "proxy"
+      },
+      "spec": {
+        "replicas": 1,
+        "selector": {
+          "matchLabels": {
+            "app": "proxy"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "proxy"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "das-sa",
+            "containers": [
+              {
+                "name": "oauth-proxy",
+                "image": "openshift/oauth-proxy:v1.0.0",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8443,
+                    "name": "public"
+                  }
+                ],
+                "args": [
+                  "--https-address=:8443",
+                  "--provider=openshift",
+                  "--openshift-service-account=das-sa",
+                  "--upstream=http://komodo:8080",
+                  "--tls-cert=/etc/tls/private/tls.crt",
+                  "--tls-key=/etc/tls/private/tls.key",
+                  "--cookie-secret=V2lsZDAwZDJXaWxkMDBkMg==",
+                  "--pass-access-token=true",
+                  "--skip-provider-button=true",
+                  "--pass-basic-auth=false",
+                  "--pass-user-headers=true",
+                  "--pass-host-header=true",
+                  "--skip-auth-preflight",
+                  "--openshift-ca=/etc/pki/tls/certs/ca-bundle.crt",
+                  "--openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                ],
+                "volumeMounts": [
+                  {
+                    "mountPath": "/etc/tls/private",
+                    "name": "proxy-tls"
+                  }
+                ]
+              },
+              {
+                "name": "app",
+                "image": "openshift/hello-openshift:latest"
+              }
+            ],
+            "volumes": [
+              {
+                "name": "proxy-tls",
+                "secret": {
+                  "secretName": "proxy-tls"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+        "kind": "Service",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "komodo-http",
+            "labels": {
+                "application": "komodo"
+            },
+            "annotations": {
+                "description": "Route for Data Virtualization services."
+            }
+        },
+        "spec": {
+            "ports": [
+                {
+                    "name": "http",
+                    "port": 8080,
+                    "targetPort": "http"
+                },
+                {
+                    "name": "admin",
+                    "port": 9990,
+                    "targetPort": "admin"
+                }
+            ],
+            "selector": {
+                "deploymentConfig": "komodo"
+            }
+        }
+    },
+	{
+       "apiVersion": "extensions/v1beta1",
+       "kind": "Deployment",
+	   "metadata":{
+	      "name":"komodo"
+	   },
+	   "spec":{
+	      "replicas":1,
+	      "selector":{
+	         "matchLabels": {
+	         "app": "komodo"
+	       }   
+	      },	   
+	      "template":{
+	         "metadata":{
+	            "name":"komodo",
+	            "labels":{
+	               "app":"komodo"
+	            }
+	         },
+	         "spec":{
+	            "serviceAccountName": "das-sa",
+	            "terminationGracePeriodSeconds":120,
+	            "containers":[
+	               {
+	                  "name":"komodo",
+	                  "image":"teiid/komodo:0.0.4-SNAPSHOT",
+	                  "imagePullPolicy":"IfNotPresent",
+	                  "resources":{
+	                     "requests":{
+	                        "cpu":"500m",
+	                        "memory":"2048Mi"
+	                     }
+	                  },                  
+	                  "ports":[                  
+	                     {
+	                        "name":"http",
+	                        "containerPort":8080,
+	                        "protocol":"TCP"
+	                     },
+	                     {
+	                        "name":"admin",
+	                        "containerPort":9990,
+	                        "protocol":"TCP"
+	                     }
+	                  ],
+	                  "env":[
+	                     {
+	                        "name":"OPENSHIFT_KUBE_PING_LABELS",
+	                        "value":"application=komodo"
+	                     },
+	                     {
+	                        "name":"OPENSHIFT_KUBE_PING_NAMESPACE",
+	                        "valueFrom":{
+	                           "fieldRef":{
+	                              "fieldPath":"metadata.namespace"
+	                           }
+	                        }
+	                     }
+	                  ]
+	               }
+	            ]
+	         }
+	      },
+	      "strategy":{
+	          "type": "Recreate"
+	      },
+	      "triggers":[
+	         {
+	            "type":"ImageChange",
+	            "imageChangeParams":{
+	               "automatic":true,
+	               "containerNames":[
+	                  "komodo"
+	               ],
+	               "from":{
+	                  "kind":"ImageStreamTag",
+	                  "name":"teiid/komodo:0.0.4-SNAPSHOT"
+	               }
+	            }
+	         },
+	         {
+	            "type":"ConfigChange"
+	         }
+	      ]	      
+	   }
+	}        
+  ]
+}
