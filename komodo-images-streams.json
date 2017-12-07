@@ -1,0 +1,55 @@
+{
+  "kind": "ImageStreamList",
+  "apiVersion": "v1",
+  "metadata": {},
+  "items": [
+	{
+	   "kind": "ImageStream",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "komodo",
+            "annotations": {
+                "openshift.io/display-name": "Komodo Image Stream Repository View"
+            }
+        },
+        "spec": {
+            "tags": [
+                {
+                    "name": "latest",
+                    "annotations": {
+                        "description": "Data Access Service related images.",
+                        "iconClass": "icon-datavirt",
+                        "tags": "das, teiid, jdv",
+                        "supports": "komodo",
+                        "sampleRepo": "https://github.com/teiid/openshift-quickstarts.git",
+                        "sampleContextDir": ".",
+                        "version": "latest",
+                        "openshift.io/display-name": "Data Access Service related images"
+                    },
+                    "from": {
+                        "kind": "ImageStreamTag",
+                        "name": "0.0.4-SNAPSHOT"
+                    }
+                },            
+                {
+                    "name": "0.0.4-SNAPSHOT",
+                    "annotations": {
+                        "description": "Data Access Service related images.",
+                        "iconClass": "icon-datavirt",
+                        "tags": "das, teiid, jdv",
+                        "supports": "komodo",
+                        "sampleRepo": "https://github.com/teiid/openshift-quickstarts.git",
+                        "sampleContextDir": ".",
+                        "version": "0.0.4-SNAPSHOT",
+                        "openshift.io/display-name": "Data Access Service related images"
+                    },
+                    "from": {
+                        "kind": "DockerImage",
+                        "name": "teiid/komodo:0.0.4-SNAPSHOT"
+                    }
+                }
+            ]
+        }
+    }  
+  ]
+}

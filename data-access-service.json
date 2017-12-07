@@ -10,9 +10,9 @@
             "version": "1.0.0",
             "openshift.io/display-name": "Data Access Service",
 	        "template.openshift.io/documentation-url": "http://teiid.org/docs/",
-	        "template.openshift.io/long-description": "This template provides UI to create a data access services using Teiid Data Virtualization engine.",
+	        "template.openshift.io/long-description": "This template provides UI to create a data access services using Teiid Data Virtualization Technology. Combine data from disparte hetrogeneous sources like files, relational databases, cloud sources, webservices etc and expose them as single service",
 	        "template.openshift.io/provider-display-name": "Red Hat, Inc.",
-	        "template.openshift.io/support-url": "http://teiid.org/"            
+	        "template.openshift.io/support-url": "http://teiid.org/"       
         }
     },
     "labels": {
@@ -32,9 +32,9 @@
       "apiVersion": "v1",
       "kind": "ServiceAccount",
       "metadata": {
-        "name": "das-sa",
+        "name": "proxy",
         "annotations": {
-          "serviceaccounts.openshift.io/oauth-redirectreference.primary": "{\"kind\":\"OAuthRedirectReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"Route\",\"name\":\"das\"}}"
+          "serviceaccounts.openshift.io/oauth-redirectreference.primary": "{\"kind\":\"OAuthRedirectReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"Route\",\"name\":\"proxy\"}}"
         }
       }
     },
@@ -42,17 +42,18 @@
       "apiVersion": "v1",
       "kind": "Route",
       "metadata": {
-        "name": "das"
+        "name": "proxy"
       },
       "spec": {
         "to": {
-          "name": "proxy"
+          "name": "proxy",
+          "kind": "Service"
         },
         "tls": {
           "termination": "Reencrypt"
         }
       }
-    },
+    },   
     {
       "apiVersion": "v1",
       "kind": "Service",
@@ -71,7 +72,7 @@
           }
         ],
         "selector": {
-          "app": "proxy"
+          "name": "proxy"
         }
       }
     },
@@ -95,7 +96,7 @@
             }
           },
           "spec": {
-            "serviceAccountName": "das-sa",
+            "serviceAccountName": "proxy",
             "containers": [
               {
                 "name": "oauth-proxy",
@@ -110,19 +111,20 @@
                 "args": [
                   "--https-address=:8443",
                   "--provider=openshift",
-                  "--openshift-service-account=das-sa",
-                  "--upstream=http://komodo:8080",
+                  "--openshift-service-account=proxy",
+                  "--upstream=http://komodo:8080/vdb-builder/",
                   "--tls-cert=/etc/tls/private/tls.crt",
                   "--tls-key=/etc/tls/private/tls.key",
                   "--cookie-secret=V2lsZDAwZDJXaWxkMDBkMg==",
                   "--pass-access-token=true",
                   "--skip-provider-button=true",
-                  "--pass-basic-auth=false",
+                  "--pass-basic-auth=true",
                   "--pass-user-headers=true",
                   "--pass-host-header=true",
                   "--skip-auth-preflight",
                   "--openshift-ca=/etc/pki/tls/certs/ca-bundle.crt",
-                  "--openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+                  "--openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+                  "--scope=user:info user:check-access role:admin:${NAMESPACE}:!"
                 ],
                 "volumeMounts": [
                   {
@@ -130,10 +132,6 @@
                     "name": "proxy-tls"
                   }
                 ]
-              },
-              {
-                "name": "app",
-                "image": "openshift/hello-openshift:latest"
               }
             ],
             "volumes": [
@@ -147,12 +145,28 @@
           }
         }
       }
-    },
+    },   
+    {
+      "apiVersion": "v1",
+      "kind": "Route",
+      "metadata": {
+        "name": "komodo"
+      },
+      "spec": {    
+        "port": {
+            "targetPort": 8080
+         },
+        "to": {
+          "name": "komodo",
+          "kind": "Service"          
+        }
+      }
+    },     
     {
         "kind": "Service",
         "apiVersion": "v1",
         "metadata": {
-            "name": "komodo-http",
+            "name": "komodo",
             "labels": {
                 "application": "komodo"
             },
@@ -165,53 +179,48 @@
                 {
                     "name": "http",
                     "port": 8080,
-                    "targetPort": "http"
+                    "targetPort": 8080
                 },
                 {
                     "name": "admin",
                     "port": 9990,
-                    "targetPort": "admin"
+                    "targetPort": 9990
                 }
             ],
             "selector": {
-                "deploymentConfig": "komodo"
+                "name": "komodo"
             }
         }
     },
 	{
-       "apiVersion": "extensions/v1beta1",
-       "kind": "Deployment",
+       "apiVersion": "v1",
+       "kind": "DeploymentConfig",
 	   "metadata":{
 	      "name":"komodo"
 	   },
 	   "spec":{
 	      "replicas":1,
-	      "selector":{
-	         "matchLabels": {
-	         "app": "komodo"
-	       }   
-	      },	   
+	      "selector": {
+	      	"name": "komodo" 
+	      },
+	      "strategy":{
+	          "type": "Recreate"
+	      },	      	   
 	      "template":{
 	         "metadata":{
-	            "name":"komodo",
 	            "labels":{
-	               "app":"komodo"
+	               "name":"komodo"
 	            }
 	         },
 	         "spec":{
-	            "serviceAccountName": "das-sa",
+	            "serviceAccountName": "proxy",
 	            "terminationGracePeriodSeconds":120,
 	            "containers":[
 	               {
+	                  "capabilities": {},
 	                  "name":"komodo",
-	                  "image":"teiid/komodo:0.0.4-SNAPSHOT",
-	                  "imagePullPolicy":"IfNotPresent",
-	                  "resources":{
-	                     "requests":{
-	                        "cpu":"500m",
-	                        "memory":"2048Mi"
-	                     }
-	                  },                  
+	                  "image":" ",
+	                  "imagePullPolicy":"IfNotPresent",                 
 	                  "ports":[                  
 	                     {
 	                        "name":"http",
@@ -236,32 +245,35 @@
 	                              "fieldPath":"metadata.namespace"
 	                           }
 	                        }
-	                     }
+	                     },
+	                     {
+	                        "name":"GC_MAX_METASPACE_SIZE",
+	                        "value":"512"
+	                     }	                                          
 	                  ]
 	               }
 	            ]
 	         }
 	      },
-	      "strategy":{
-	          "type": "Recreate"
-	      },
-	      "triggers":[
-	         {
-	            "type":"ImageChange",
-	            "imageChangeParams":{
-	               "automatic":true,
-	               "containerNames":[
-	                  "komodo"
-	               ],
-	               "from":{
-	                  "kind":"ImageStreamTag",
-	                  "name":"teiid/komodo:0.0.4-SNAPSHOT"
-	               }
-	            }
-	         },
-	         {
-	            "type":"ConfigChange"
-	         }
+	      "triggers": [
+			{
+			    "imageChangeParams": {
+			        "automatic": true,
+			        "containerNames": [
+			            "komodo"
+			        ],
+			        "from": {
+			            "kind": "ImageStreamTag",
+			            "name": "komodo:latest",
+			            "namespace": "openshift"
+			        },
+			        "lastTriggeredImage": ""
+			    },
+			    "type": "ImageChange"
+			},
+			{
+			    "type": "ConfigChange"
+			}
 	      ]	      
 	   }
 	}        
