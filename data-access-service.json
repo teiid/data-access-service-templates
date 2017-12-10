@@ -20,12 +20,12 @@
     },
     "message": "A new data access service has been created in your project",
     "parameters": [
-	    {
-	      "description": "Namespace for the application. Note: The namespace is required for creating proper RoleBindings. Specifying wrong namespace will prevent cluster from forming.",
-	      "name": "NAMESPACE",
-	      "required": true,
-	      "value": "myproject"
-	    }
+        {
+            "description": "Namespace for the application. Note: The namespace is required for creating proper RoleBindings. Specifying wrong namespace will prevent cluster from forming. This sould be same as your project name.",
+            "name": "NAMESPACE",
+            "required": true,
+            "value": "myproject"
+        }
     ],    
     "objects": [
     {
@@ -39,12 +39,15 @@
       }
     },
     {
-      "apiVersion": "v1",
+      "apiVersion": "route.openshift.io/v1",
       "kind": "Route",
       "metadata": {
         "name": "proxy"
       },
       "spec": {
+        "port": {
+            "targetPort": 8443
+         },
         "to": {
           "name": "proxy",
           "kind": "Service"
@@ -72,7 +75,7 @@
           }
         ],
         "selector": {
-          "name": "proxy"
+          "app": "proxy"
         }
       }
     },
@@ -124,7 +127,7 @@
                   "--skip-auth-preflight",
                   "--openshift-ca=/etc/pki/tls/certs/ca-bundle.crt",
                   "--openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
-                  "--scope=user:info user:check-access role:admin:${NAMESPACE}:!"
+                  "--scope=user:info user:check-access role:admin:${NAMESPACE}:! role:cluster-admin:${NAMESPACE}:!"
                 ],
                 "volumeMounts": [
                   {
@@ -249,7 +252,19 @@
 	                     {
 	                        "name":"GC_MAX_METASPACE_SIZE",
 	                        "value":"512"
-	                     }	                                          
+	                     },
+	                     {
+	                        "name": "NAMESPACE",
+	                        "valueFrom":{
+	                           "fieldRef":{
+	                              "fieldPath":"metadata.namespace"
+	                           }
+	                        }
+	                     },
+	                     {
+	                     	"name": "JAVA_OPTIONS",
+	                     	"value": "-DNAMESPACE=${NAMESPACE} -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true -Dlog4j.logger.org.apache.http=DEBUG"
+	                     }                                          
 	                  ]
 	               }
 	            ]
