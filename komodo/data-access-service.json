@@ -280,7 +280,7 @@
                   },
                   {
                     "name":"JAVA_OPTIONS",
-                    "value":"-DNAMESPACE=${NAMESPACE} -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true -Dlog4j.logger.org.apache.http=DEBUG -DREPOSITORY_PERSISTENCE_USER=user -DREPOSITORY_PERSISTENCE_PASSWORD=password -DREPOSITORY_PERSISTENCE_URL=jdbc:postgresql://pg-storage:5432/komododb -DREPOSITORY_CONNECTION_DRIVER=org.postgresql.Driver"
+                    "value":"-DNAMESPACE=${NAMESPACE} -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true -Dlog4j.logger.org.apache.http=DEBUG -Dkomodo.user=user -Dkomodo.password=password -Dkomodo.connectionUrl=jdbc:postgresql://pg-storage:5432/komododb -Dkomodo.connectionDriver=org.postgresql.Driver"
                   }
                 ]
               }
@@ -418,7 +418,7 @@
                       "/bin/sh",
                       "-i",
                       "-c",
-                      "psql -h 127.0.0.1 -U user -q -d password -c 'SELECT 1'"
+                      "psql -h 127.0.0.1 -U user -q -d komododb -c 'SELECT 1'"
                     ]
                   },
                   "initialDelaySeconds":5,
