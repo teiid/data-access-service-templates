@@ -1,4 +1,4 @@
-!#/bin/sh
+#!/bin/sh
 
 oc delete is komodo -n openshift
 oc delete template data-access-service -n openshift
