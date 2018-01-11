@@ -37,6 +37,35 @@ Once the downloaded, extract into any directory and run
 This should take few minutes to download CDK, OpenShift when done, you will see a text like
 
 ```
+====================================================
+=                                                  =
+= Install complete, get ready to rock your Cloud.  =
+= Look for information at end of OCP install.      =
+=                                                  =
+=  The server is accessible via web console at:    =
+=                                                  =
+=	  https://192.168.42.152:8443              =
+=                                                  =
+=  Log in as user: openshift-dev                   =
+=        password: devel                           =
+=                                                  =
+=  Admin log in as: admin                          =
+=         password: admin                          =
+=                                                  =
+=  Now get your Red Hat Demo Central example       =
+=  projects here:                                  =
+=                                                  =
+=     https://github.com/redhatdemocentral         =
+=                                                  =
+=  To stop and restart your OCP cluster with       =
+=  installed containers, see Readme.md in the      =
+=  NOTES section for details.                      =
+=                                                  =
+=  When finished, clean up your demo with:         =
+=                                                  =
+=     $ docker-machine rm -f openshift             =
+=                                                  =
+====================================================
 ```
 
 Now execute following to login into the OpenShift instance.
