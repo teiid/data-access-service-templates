@@ -71,7 +71,12 @@ This should take few minutes to download CDK, OpenShift when done, you will see 
 Now execute following to login into the OpenShift instance.
 
 ```
-oc login admin:admin
+$oc login 192.168.42.152:8443 
+
+Authentication required for https://192.168.42.152:8443 (openshift)
+Username: admin
+Password: 
+Login successful.
 ```
 
 You are now ready to do the real reason you are here for, i.e. Data Access Template.
@@ -82,6 +87,9 @@ You are now ready to do the real reason you are here for, i.e. Data Access Templ
 - cd into "komodo" directory and execute
 ```
 ./load.sh
+
+imagestream "komodo" created
+template "data-access-service" created
 ```
 this should load the "Data Access Service" template into your OpenShift instance. Now using your browser if you login into OpenShift "Web Console", on the main page you should see a icon called "Data Access Service" (NOTE: it could upto 15 minutes before this icon shows up in the Web Console). Once it is there you can click on it and "provision" it.
 
