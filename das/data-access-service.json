@@ -536,7 +536,7 @@
           "contextDir":"src/main/ngapp",
           "git":{
             "ref":"master",
-            "uri":"https://github.com/rareddy/beetle-studio.git"
+            "uri":"https://github.com/teiid/beetle-studio.git"
           },
           "type":"Git"
         },
