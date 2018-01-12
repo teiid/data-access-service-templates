@@ -84,7 +84,7 @@ You are now ready to do the real reason you are here for, i.e. Data Access Templ
 # Data Access Service Template
 
 - Clone this repository or download the ZIP file of this repository and unzip the contents to any directory
-- cd into "komodo" directory and execute
+- cd into "das" directory and execute
 ```
 ./load.sh
 
@@ -100,6 +100,6 @@ oc process data-access-service -p NAMESPACE=myproject -n openshift | oc create -
 ```
 This has exact effect of "provision" by clicking on the icon on Web Console. Once the instace is provisioned, then go into your project (in this case "myproject"), you will see service being started, wait until all services are started then go to the "application/route" page to find the endpoint where you can access the "Data Access Service". 
 
-When you go the link very first time, the process will take you through a login, then giving some authorization permissions to the program. If all goes correct you should see the Beetle main page (once integrated). You can also append "/vdb-builder" to same URL to see the Swagger API based page for Teiid Komodo Engine.
+When you go the link very first time, the process will take you through a login, then giving some authorization permissions to the program. If all goes correct you should see the Beetle main page. You can also append "/vdb-builder" to same URL to see the Swagger API based page for Teiid Komodo Engine.
 
 Now let's get this thing moving..
