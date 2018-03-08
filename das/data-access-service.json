@@ -491,83 +491,10 @@
     },
     {
       "apiVersion":"v1",
-      "kind":"ImageStream",
-      "metadata":{
-        "annotations":{
-          "description":"Keeps track of changes in the application image"
-        },
-        "name":"beetle"
-      }
-    },
-    {
-      "apiVersion":"v1",
-      "kind":"BuildConfig",
-      "metadata":{
-        "annotations":{
-          "description":"Defines how to build the Beetle application",
-          "template.alpha.openshift.io/wait-for-ready":"true"
-        },
-        "name":"beetle"
-      },
-      "spec":{
-        "output":{
-          "to":{
-            "kind":"ImageStreamTag",
-            "name":"beetle:latest"
-          }
-        },
-        "source":{
-          "contextDir":"src/main/ngapp",
-          "git":{
-            "ref":"master",
-            "uri":"https://github.com/teiid/beetle-studio.git"
-          },
-          "type":"Git"
-        },
-        "strategy":{
-          "sourceStrategy":{
-            "env":[
-              {
-                "name":"NPM_MIRROR",
-                "value":""
-              }
-            ],
-            "from":{
-              "kind":"ImageStreamTag",
-              "name":"nodejs:6",
-              "namespace":"openshift"
-            }
-          },
-          "type":"Source"
-        },
-        "triggers":[
-          {
-            "type":"ImageChange"
-          },
-          {
-            "type":"ConfigChange"
-          },
-          {
-            "github":{
-              "secret":"${GITHUB_WEBHOOK_SECRET}"
-            },
-            "type":"GitHub"
-          },
-          {
-            "generic":{
-              "secret":"${GENERIC_WEBHOOK_SECRET}"
-            },
-            "type":"Generic"
-          }
-        ]
-      }
-    },
-    {
-      "apiVersion":"v1",
       "kind":"DeploymentConfig",
       "metadata":{
         "annotations":{
-          "description":"Defines how to deploy the application server",
+          "description":"Defines how to deploy the OpenShift server",
           "template.alpha.openshift.io/wait-for-ready":"true"
         },
         "name":"beetle"
@@ -593,6 +520,7 @@
                 "env":[
 
                 ],
+                "name":"beetle",
                 "image":" ",
                 "livenessProbe":{
                   "httpGet":{
@@ -602,7 +530,6 @@
                   "initialDelaySeconds":30,
                   "timeoutSeconds":3
                 },
-                "name":"beetle-app",
                 "ports":[
                   {
                     "containerPort":8080
@@ -630,11 +557,12 @@
             "imageChangeParams":{
               "automatic":true,
               "containerNames":[
-                "beetle-app"
+                "beetle"
               ],
               "from":{
                 "kind":"ImageStreamTag",
-                "name":"beetle:latest"
+                "name":"beetle:latest",
+                "namespace":"openshift"
               }
             },
             "type":"ImageChange"

@@ -1,0 +1,40 @@
+{
+  "kind":"ImageStreamList",
+  "apiVersion":"v1",
+  "metadata":{
+
+  },
+  "items":[
+    {
+      "kind":"ImageStream",
+      "apiVersion":"v1",
+      "metadata":{
+        "name":"beetle",
+        "annotations":{
+          "openshift.io/display-name":"Beetle Studio Image Stream Repository View"
+        }
+      },
+      "spec":{
+        "tags":[
+          {
+            "name":"latest",
+            "annotations":{
+              "description":"Data Access Service related images.",
+              "iconClass":"icon-datavirt",
+              "tags":"das, teiid, jdv",
+              "supports":"komodo",
+              "sampleRepo":"https://github.com/teiid/openshift-quickstarts.git",
+              "sampleContextDir":".",
+              "version":"latest",
+              "openshift.io/display-name":"Data Access Service related images"
+            },
+            "from":{
+              "kind":"DockerImage",
+              "name":"teiid/beetle-studio:latest"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
