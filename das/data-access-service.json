@@ -67,6 +67,23 @@
       }
     },
     {
+      "kind": "RoleBinding",
+      "apiVersion": "v1",
+      "metadata": {
+          "name": "das_admin"
+      },
+      "groupNames": null,
+      "subjects": [
+          {
+              "kind": "ServiceAccount",
+              "name": "das"
+          }
+      ],
+      "roleRef": {
+          "name": "admin"
+      }
+    },    
+    {
       "apiVersion":"route.openshift.io/v1",
       "kind":"Route",
       "metadata":{
