@@ -313,7 +313,7 @@
               "from":{
                 "kind":"ImageStreamTag",
                 "name":"komodo:latest",
-                "namespace":"openshift"
+                "namespace":"${NAMESPACE}"
               },
               "lastTriggeredImage":""
             },
@@ -579,7 +579,7 @@
               "from":{
                 "kind":"ImageStreamTag",
                 "name":"beetle:latest",
-                "namespace":"openshift"
+                "namespace":"${NAMESPACE}"
               }
             },
             "type":"ImageChange"
