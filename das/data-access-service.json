@@ -257,6 +257,24 @@
                 "name":"komodo",
                 "image":" ",
                 "imagePullPolicy":"IfNotPresent",
+                "livenessProbe": {
+                    "httpGet": {
+                        "path": "/",
+                        "port": 8080
+                    },
+                    "initialDelaySeconds": 30,
+                    "timeoutSeconds": 3,
+                    "periodSeconds": 15                    
+                },
+                "readinessProbe": {
+                    "httpGet": {
+                        "path": "/vdb-builder",
+                        "port": 8080
+                    },
+                    "initialDelaySeconds": 3,
+                    "timeoutSeconds": 3,
+                    "periodSeconds": 15
+                },                
                 "ports":[
                   {
                     "name":"http",
