@@ -259,7 +259,7 @@
                 "imagePullPolicy":"IfNotPresent",
                 "livenessProbe": {
                     "httpGet": {
-                        "path": "/",
+                        "path": "/vdb-builder/api-docs/index.html",
                         "port": 8080
                     },
                     "initialDelaySeconds": 30,
@@ -268,7 +268,7 @@
                 },
                 "readinessProbe": {
                     "httpGet": {
-                        "path": "/vdb-builder",
+                        "path": "/vdb-builder/api-docs/index.html",
                         "port": 8080
                     },
                     "initialDelaySeconds": 3,
