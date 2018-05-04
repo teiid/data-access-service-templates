@@ -17,6 +17,10 @@ _p: &_p
     title: PostgreSQL Database Port
     type: int
     default: 5432
+###############################################################################
+#
+###############################################################################
+_bindp: &_bindp
   - name: postgresql_user
     title: PostgreSQL User
     type: string
@@ -37,7 +41,7 @@ tags:
   - on_premise
 async: optional
 metadata:
-  displayName: PostgreSQL(On Premise)
+  displayName: PostgreSQL(External)
   longDescription: "Connection to on premises Postgres Database which is hosted outside of cloud 
     environment. This will be accessed either through a proxy or VPN connection for security reasons"
   imageUrl: https://wiki.postgresql.org/images/3/30/PostgreSQL_logo.3colors.120x120.png 
@@ -51,4 +55,5 @@ plans:
       longDescription: This plan deploys a Postgres Database, if the defined database is not available it tries to create one. 
       cost: $0.00
     parameters: *_p
+    bind_parameters: *_bindp
 
