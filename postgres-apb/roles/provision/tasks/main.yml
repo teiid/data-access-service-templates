@@ -1,29 +1,4 @@
 ---   
-- name: create '{{ postgresql_database }}' deployment config
-  openshift_v1_deployment_config:
-    name: '{{ postgresql_database }}'
-    namespace: '{{ namespace }}'
-    labels:
-      app: '{{ postgresql_database }}'
-      service: '{{ postgresql_database }}'
-    replicas: 1
-    selector:
-      app: '{{ postgresql_database }}'
-      service: '{{ postgresql_database }}'
-    spec_template_metadata_labels:
-      app: '{{ postgresql_database }}'
-      service: '{{ postgresql_database }}'
-    containers:
-    - env:
-      - name: IP_SRC_PORT
-        value: "\"{{ postgresql_port }}\""
-      - name: IP_DEST_HOST
-        value: '{{ postgresql_host }}'
-      - name: IP_DEST_PORT
-        value: "\"{{ postgresql_port }}\""
-      image: docker.io/rareddy/ip-forward   
-      name: '{{ postgresql_database }}'
-
 - name: create '{{ postgresql_database }}' service
   k8s_v1_service:
     name: '{{ postgresql_database }}'
@@ -40,6 +15,18 @@
       port: 5432
       protocol: TCP
       target_port: 5432
+
+- name: create '{{ postgresql_database }}' endpoints
+  k8s_v1_endpoints:
+    name: '{{ postgresql_database }}'
+    namespace: '{{ namespace }}'
+    subsets:
+    - addresses:
+      - ip: '{{postgresql_host}}'
+    ports:
+      port: 5432
+    - name: '{{ postgresql_database }}'
+
       
 - name: Encode '{{ postgresql_database }}' bind credentials
   asb_encode_binding:
@@ -50,4 +37,4 @@
       DB_USER: "{{ postgresql_user }}"
       DB_PASSWORD: "{{ postgresql_password }}"
       DB_NAME: "{{ postgresql_database }}"
-      DB_SCHEMA: "{{ postgresql_schema }}"      
+      DB_SCHEMA: "{{ postgresql_schema }}"
