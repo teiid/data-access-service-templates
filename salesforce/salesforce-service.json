@@ -19,21 +19,6 @@
   },
   "objects": [
     {
-      "apiVersion": "v1",
-      "kind": "Service",
-      "metadata": {
-        "labels": {
-          "application": "${APPLICATION_NAME}"
-        },
-        "name": "${APPLICATION_NAME}"
-      },
-      "spec": {
-        "type": "ExternalName",
-        "externalName": "${SALESFORCE_URL}",
-        "selector": {}
-      }
-    },
-    {
       "kind": "Secret",
       "apiVersion": "v1",
       "metadata": {
@@ -41,14 +26,14 @@
         "annotations": {
           "template.openshift.io/expose-username": "{.data['username']}",
           "template.openshift.io/expose-password": "{.data['password']}",
-          "template.openshift.io/expose-service_name": "{.data['service-name']}",
+          "template.openshift.io/expose-url": "{.data['url']}",
           "template.openshift.io/expose-service_type": "{.data['service-type']}"
         }
       },
       "stringData" : {
         "username": "${SALESFORCE_USER}",
         "password": "${SALESFORCE_PASSWORD}",
-        "service-name" : "${APPLICATION_NAME}",
+        "url" : "${SALESFORCE_URL}",
         "service-type" : "salesforce"
       }
     }
@@ -74,10 +59,11 @@
       "required": true
     },
     {
-      "description": "URL For accessing Salesforce",
+      "description": "URL for accessing Salesforce",
       "displayName": "Salesforce URL",
       "name": "SALESFORCE_URL",
+      "required": true,
       "value": "https://login.salesforce.com/services/Soap/u/40.0"
-    }    
+    }       
   ]
 }
